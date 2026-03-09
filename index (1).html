@@ -1454,7 +1454,7 @@ function selectType(type, el) {
   el.classList.add('selected');
 }
 
-function doLookup() {
+async function doLookup() {
   const name = document.getElementById('reg-name').value.trim();
   if (!name) { alert('من فضلك أدخل اسمك أولاً'); return; }
 
@@ -1462,19 +1462,27 @@ function doLookup() {
   document.getElementById('reg-error').classList.remove('show');
   document.getElementById('reg-loading').classList.add('show');
 
-  setTimeout(() => {
+  try {
+    const res = await fetch(`${API}/api/auth/lookup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, grade, phone, parentPhone })
+    });
+    const data = await res.json();
     document.getElementById('reg-loading').classList.remove('show');
-    const found = demoStudents.find(s => s.name.includes(name) || name.includes(s.name.split(' ')[0]));
-    if (found) {
-      document.getElementById('found-seat').textContent = found.seat;
+    if (data.found) {
+      document.getElementById('found-seat').textContent = data.seatNumber;
       document.getElementById('reg-success').classList.add('show');
     } else {
       document.getElementById('reg-error').classList.add('show');
     }
-  }, 1200);
+  } catch {
+    document.getElementById('reg-loading').classList.remove('show');
+    document.getElementById('reg-error').classList.add('show');
+  }
 }
 
-function goToResults() {
+async function searchResult() {
   const seat = document.getElementById('found-seat').textContent;
   showPage('results', document.querySelectorAll('.nav-links button')[2]);
   document.getElementById('seat-input').value = seat;
@@ -1490,15 +1498,19 @@ function searchResult() {
   document.getElementById('results-tabs').classList.remove('show');
   document.getElementById('results-loading').classList.add('show');
 
-  setTimeout(() => {
+  try {
+    const res = await fetch(`${API}/api/results/${seat}`);
+    const data = await res.json();
     document.getElementById('results-loading').classList.remove('show');
-    const data = demoResults[seat];
-    if (data) {
+    if (data.student) {
       renderResults(data, seat);
     } else {
-      alert('❌ رقم الجلوس غير موجود. تحقق من الرقم وحاول مرة أخرى.');
+      alert('❌ رقم الجلوس غير موجود.');
     }
-  }, 1000);
+  } catch {
+    document.getElementById('results-loading').classList.remove('show');
+    alert('❌ حدث خطأ، حاول مرة أخرى.');
+  }
 }
 
 function renderResults(data, seat) {
