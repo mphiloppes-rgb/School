@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة تحكم المدير</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary:#0A2463;--secondary:#1E6091;--accent:#F4A261;
+  --success:#06D6A0;--danger:#EF233C;--warning:#FFB703;
+  --bg:#F0F4F8;--sidebar:#0d1f4e;--sidebar-hover:#162b6b;
+  --card:#ffffff;--text:#1a1a2e;--muted:#64748b;--border:#e2e8f0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
+
+.sidebar{width:255px;background:var(--sidebar);min-height:100vh;display:flex;flex-direction:column;position:fixed;right:0;top:0;z-index:50;}
+.sidebar-logo{padding:22px 18px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;}
+.logo-icon{width:42px;height:42px;background:var(--accent);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+.logo-text h3{font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:800;color:white;}
+.logo-text p{font-size:0.7rem;color:rgba(255,255,255,0.45);}
+.sidebar-nav{flex:1;padding:14px 10px;}
+.nav-sec{font-size:0.68rem;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:1.5px;padding:14px 12px 6px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:10px;color:rgba(255,255,255,0.68);cursor:pointer;transition:all 0.2s;font-size:0.9rem;font-weight:600;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:right;}
+.nav-item:hover{background:var(--sidebar-hover);color:white;}
+.nav-item.active{background:rgba(244,162,97,0.15);color:var(--accent);}
+.nav-item .ni{font-size:1.05rem;width:22px;text-align:center;flex-shrink:0;}
+.sidebar-foot{padding:14px 10px;border-top:1px solid rgba(255,255,255,0.08);}
+
+.main{margin-right:255px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:white;height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:40;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+.topbar-title{font-family:'Tajawal',sans-serif;font-size:1.15rem;font-weight:800;color:var(--primary);}
+.topbar-right{display:flex;align-items:center;gap:14px;}
+.admin-badge{display:flex;align-items:center;gap:9px;background:var(--bg);padding:7px 14px;border-radius:50px;}
+.admin-avatar{width:32px;height:32px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.82rem;font-weight:700;}
+.admin-badge span{font-size:0.86rem;font-weight:700;}
+
+.content{padding:26px;flex:1;}
+.section{display:none;}
+.section.active{display:block;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:18px;margin-bottom:26px;}
+.stat-card{background:white;border-radius:15px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.05);display:flex;align-items:center;gap:14px;border-right:4px solid transparent;transition:transform 0.2s;}
+.stat-card:hover{transform:translateY(-3px);}
+.stat-card.blue{border-color:var(--primary);}
+.stat-card.green{border-color:var(--success);}
+.stat-card.orange{border-color:var(--accent);}
+.stat-card.red{border-color:var(--danger);}
+.stat-icon{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+.stat-card.blue .stat-icon{background:rgba(10,36,99,0.08);}
+.stat-card.green .stat-icon{background:rgba(6,214,160,0.1);}
+.stat-card.orange .stat-icon{background:rgba(244,162,97,0.1);}
+.stat-card.red .stat-icon{background:rgba(239,35,60,0.08);}
+.stat-info h3{font-family:'Tajawal',sans-serif;font-size:1.75rem;font-weight:900;line-height:1;}
+.stat-info p{font-size:0.8rem;color:var(--muted);margin-top:3px;}
+
+.card{background:white;border-radius:17px;box-shadow:0 2px 13px rgba(0,0,0,0.05);overflow:hidden;margin-bottom:22px;}
+.card-header{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.card-title{font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:800;color:var(--primary);display:flex;align-items:center;gap:7px;}
+.card-body{padding:22px;}
+
+.btn{padding:9px 18px;border-radius:9px;font-family:'Cairo',sans-serif;font-size:0.86rem;font-weight:700;cursor:pointer;border:none;transition:all 0.2s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--primary);color:white;}
+.btn-primary:hover{background:var(--secondary);}
+.btn-success{background:var(--success);color:white;}
+.btn-danger{background:var(--danger);color:white;}
+.btn-danger:hover{opacity:0.9;}
+.btn-outline{background:transparent;border:2px solid var(--border);color:var(--text);}
+.btn-outline:hover{border-color:var(--primary);color:var(--primary);}
+.btn-accent{background:var(--accent);color:white;}
+.btn-accent:hover{opacity:0.9;}
+.btn-sm{padding:6px 13px;font-size:0.78rem;}
+
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:0.88rem;}
+th{background:var(--bg);color:var(--muted);font-size:0.75rem;font-weight:700;padding:11px 15px;text-align:right;border-bottom:1px solid var(--border);}
+td{padding:13px 15px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(10,36,99,0.02);}
+
+.badge{display:inline-block;padding:4px 11px;border-radius:50px;font-size:0.73rem;font-weight:700;}
+.badge-active{background:rgba(6,214,160,0.1);color:#059669;}
+.badge-inactive{background:rgba(239,35,60,0.08);color:#dc2626;}
+.badge-published{background:rgba(6,214,160,0.1);color:#059669;}
+.badge-pending{background:rgba(244,162,97,0.1);color:#d97706;}
+
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.search-input{flex:1;min-width:180px;padding:10px 14px;border:2px solid var(--border);border-radius:9px;font-family:'Cairo',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.2s;}
+.search-input:focus{border-color:var(--secondary);}
+select.filter-sel{padding:10px 14px;border:2px solid var(--border);border-radius:9px;font-family:'Cairo',sans-serif;font-size:0.86rem;outline:none;background:white;cursor:pointer;}
+
+.upload-zone{border:2px dashed var(--border);border-radius:15px;padding:36px;text-align:center;cursor:pointer;transition:all 0.3s;background:var(--bg);}
+.upload-zone:hover{border-color:var(--secondary);background:rgba(30,96,145,0.04);}
+.upload-zone h4{font-size:0.95rem;font-weight:700;margin-bottom:5px;}
+.upload-zone p{font-size:0.82rem;color:var(--muted);}
+.progress-bar{height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:8px;}
+.progress-fill{height:100%;background:linear-gradient(to right,var(--primary),var(--secondary));border-radius:4px;transition:width 0.4s ease;width:0%;}
+
+.grades-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;}
+.grade-card{background:var(--bg);border-radius:13px;padding:18px;border:2px solid transparent;transition:all 0.2s;}
+.grade-card:hover{border-color:var(--border);background:white;}
+.grade-name{font-weight:800;font-size:0.92rem;}
+.grade-count{font-size:0.76rem;color:var(--muted);margin-top:3px;}
+.grade-actions{display:flex;flex-direction:column;gap:7px;margin-top:14px;}
+.grade-actions .btn{justify-content:center;width:100%;}
+
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+.dot-on{background:var(--success);}
+.dot-off{background:var(--border);}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.form-group{display:flex;flex-direction:column;gap:7px;}
+.form-group label{font-size:0.86rem;font-weight:700;}
+.form-group input,.form-group select,.form-group textarea{padding:10px 13px;border:2px solid var(--border);border-radius:9px;font-family:'Cairo',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.2s;background:white;text-align:right;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--secondary);}
+.form-full{grid-column:1/-1;}
+
+.subjects-list{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:14px;}
+.subject-chip{display:flex;align-items:center;gap:7px;background:rgba(10,36,99,0.06);border-radius:50px;padding:7px 15px;font-size:0.86rem;font-weight:700;color:var(--primary);}
+.subject-chip button{background:none;border:none;cursor:pointer;color:var(--danger);font-size:1rem;line-height:1;}
+.add-subject-row{display:flex;gap:9px;}
+
+.toggle{position:relative;width:42px;height:23px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:24px;cursor:pointer;transition:0.3s;}
+.toggle-slider::before{content:'';position:absolute;width:17px;height:17px;right:3px;top:3px;background:white;border-radius:50%;transition:0.3s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+.toggle input:checked+.toggle-slider{background:var(--success);}
+.toggle input:checked+.toggle-slider::before{transform:translateX(-19px);}
+
+.alert{padding:13px 16px;border-radius:11px;font-size:0.88rem;font-weight:600;margin-bottom:18px;display:flex;align-items:center;gap:9px;}
+.alert-warning{background:rgba(255,183,3,0.1);color:#b45309;border:1px solid #fcd34d;}
+.alert-success{background:rgba(6,214,160,0.1);color:#059669;border:1px solid #6ee7b7;}
+
+.news-item{display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--bg);border-radius:11px;margin-bottom:10px;}
+.news-icon{width:42px;height:42px;background:rgba(10,36,99,0.08);border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.news-item-body{flex:1;}
+.news-item-body h4{font-size:0.92rem;font-weight:700;margin-bottom:3px;}
+.news-item-body p{font-size:0.8rem;color:var(--muted);}
+
+.cert-preview{border:2px dashed var(--border);border-radius:15px;min-height:180px;display:flex;align-items:center;justify-content:center;color:var(--muted);background:var(--bg);cursor:pointer;flex-direction:column;gap:8px;transition:all 0.2s;}
+.cert-preview:hover{border-color:var(--secondary);}
+.cert-preview img{max-width:100%;border-radius:12px;display:none;}
+
+.activity-item{display:flex;align-items:center;gap:13px;padding:11px;background:var(--bg);border-radius:10px;margin-bottom:10px;}
+.activity-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.activity-title{font-weight:700;font-size:0.88rem;}
+.activity-time{font-size:0.75rem;color:var(--muted);}
+
+#toast{display:none;position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--text);color:white;padding:11px 22px;border-radius:50px;font-size:0.88rem;font-weight:700;z-index:999;box-shadow:0 8px 22px rgba(0,0,0,0.2);transition:opacity 0.3s;}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🏫</div>
+    <div class="logo-text"><h3>لوحة التحكم</h3><p>مدرسة النور</p></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">الرئيسية</div>
+    <button class="nav-item active" onclick="go('dashboard',this)"><span class="ni">📊</span>لوحة المعلومات</button>
+    <div class="nav-sec">الإدارة</div>
+    <button class="nav-item" onclick="go('users',this)"><span class="ni">👥</span>إدارة المستخدمين</button>
+    <button class="nav-item" onclick="go('results1',this)"><span class="ni">📋</span>نتيجة الفصل الأول</button>
+    <button class="nav-item" onclick="go('results2',this)"><span class="ni">📋</span>نتيجة الفصل الثاني</button>
+    <button class="nav-item" onclick="go('news',this)"><span class="ni">📰</span>الأخبار والإعلانات</button>
+    <div class="nav-sec">الإعدادات</div>
+    <button class="nav-item" onclick="go('subjects',this)"><span class="ni">📚</span>إدارة المواد</button>
+    <button class="nav-item" onclick="go('certificate',this)"><span class="ni">🎓</span>تيمبلت الشهادة</button>
+    <button class="nav-item" onclick="go('settings',this)"><span class="ni">⚙️</span>إعدادات الموقع</button>
+  </nav>
+  <div class="sidebar-foot">
+    <button class="nav-item" style="color:rgba(239,35,60,0.8)" onclick="showToast('تم تسجيل الخروج 👋')"><span class="ni">🚪</span>تسجيل الخروج</button>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">لوحة المعلومات</div>
+    <div class="topbar-right">
+      <a href="index.html" target="_blank" class="btn btn-outline btn-sm">🔗 عرض الموقع</a>
+      <div class="admin-badge"><div class="admin-avatar">م</div><span>المدير</span></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="section active" id="sec-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card blue"><div class="stat-icon">👥</div><div class="stat-info"><h3>248</h3><p>إجمالي الطلاب</p></div></div>
+        <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-info"><h3>231</h3><p>طلاب نشطين</p></div></div>
+        <div class="stat-card orange"><div class="stat-icon">📋</div><div class="stat-info"><h3>6</h3><p>صفوف دراسية</p></div></div>
+        <div class="stat-card red"><div class="stat-icon">⏳</div><div class="stat-info"><h3>17</h3><p>غير نشطين</p></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">📋 حالة النتائج</div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px">
+            <div style="background:var(--bg);border-radius:13px;padding:18px;display:flex;justify-content:space-between;align-items:center">
+              <div><div style="font-weight:700;margin-bottom:5px">الفصل الدراسي الأول</div><span class="badge badge-published">✅ منشورة</span></div>
+              <label class="toggle"><input type="checkbox" checked onchange="onToggle(this,'الفصل الأول')"><span class="toggle-slider"></span></label>
+            </div>
+            <div style="background:var(--bg);border-radius:13px;padding:18px;display:flex;justify-content:space-between;align-items:center">
+              <div><div style="font-weight:700;margin-bottom:5px">الفصل الدراسي الثاني</div><span class="badge badge-pending">⏳ غير منشورة</span></div>
+              <label class="toggle"><input type="checkbox" onchange="onToggle(this,'الفصل الثاني')"><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🕐 آخر العمليات</div></div>
+        <div class="card-body">
+          <div class="activity-item"><div class="activity-icon" style="background:rgba(6,214,160,0.1)">📤</div><div><div class="activity-title">رفع نتائج الفصل الأول — ثانية إعدادي</div><div class="activity-time">منذ ساعتين</div></div></div>
+          <div class="activity-item"><div class="activity-icon" style="background:rgba(10,36,99,0.08)">👤</div><div><div class="activity-title">تسجيل طالب جديد — أحمد محمد</div><div class="activity-time">منذ 5 ساعات</div></div></div>
+          <div class="activity-item"><div class="activity-icon" style="background:rgba(244,162,97,0.1)">📰</div><div><div class="activity-title">إضافة إعلان — اجتماع أولياء الأمور</div><div class="activity-time">أمس</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="section" id="sec-users">
+      <div class="alert alert-warning">⚠️ نزّل التيمبلت أولاً ← أضف البيانات يدوياً ← ارفع الملف المكتمل</div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📥 رفع / تنزيل بيانات الطلاب</div>
+          <button class="btn btn-accent" onclick="dlTemplate('بيانات الطلاب')">⬇️ تنزيل التيمبلت</button>
+        </div>
+        <div class="card-body">
+          <div class="upload-zone" onclick="document.getElementById('uf').click()" id="udrop"
+            ondragover="event.preventDefault();this.classList.add('upload-zone-drag')"
+            ondragleave="this.classList.remove('upload-zone-drag')"
+            ondrop="event.preventDefault();doUpload('users')">
+            <div style="font-size:2.5rem;margin-bottom:10px">📂</div>
+            <h4>اسحب ملف Excel هنا أو اضغط للاختيار</h4>
+            <p>يقبل ملفات .xlsx فقط — استخدم التيمبلت الرسمي</p>
+            <input type="file" id="uf" accept=".xlsx" style="display:none" onchange="doUpload('users')">
+          </div>
+          <div id="uprog" style="display:none;margin-top:14px">
+            <div style="font-size:0.86rem;font-weight:600;color:var(--muted)" id="uprog-txt">جاري الرفع...</div>
+            <div class="progress-bar"><div class="progress-fill" id="ubar"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">👥 قائمة المستخدمين</div>
+          <div style="display:flex;gap:7px"><span class="badge badge-active">231 نشط</span><span class="badge badge-inactive">17 غير نشط</span></div>
+        </div>
+        <div class="card-body">
+          <div class="filter-row">
+            <input class="search-input" placeholder="🔍 ابحث بالاسم أو رقم الجلوس..." oninput="filterUsers(this.value)">
+            <select class="filter-sel" onchange="filterGrade(this.value)">
+              <option value="">كل الصفوف</option>
+              <option>أولى إعدادي</option><option>ثانية إعدادي</option><option>ثالثة إعدادي</option>
+              <option>أولى ثانوي</option><option>ثانية ثانوي</option><option>ثالثة ثانوي</option>
+            </select>
+            <select class="filter-sel"><option>كل الحالات</option><option>نشط</option><option>غير نشط</option></select>
+          </div>
+          <div class="table-wrap">
+            <table><thead><tr><th>الاسم</th><th>رقم الجلوس</th><th>الصف</th><th>الفصل</th><th>التليفون</th><th>الحالة</th><th>إجراء</th></tr></thead>
+            <tbody id="utbody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS 1 -->
+    <div class="section" id="sec-results1">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 نتيجة الفصل الدراسي الأول</div>
+          <label class="toggle" style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:0.82rem;font-weight:700;color:var(--muted)">نشر النتيجة</span>
+            <input type="checkbox" checked onchange="onToggle(this,'الفصل الأول')"><span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="card-body">
+          <p style="color:var(--muted);font-size:0.86rem;margin-bottom:18px">نزّل التيمبلت لكل صف ← املأ البيانات ← ارفع الملف</p>
+          <div class="grades-grid" id="gg1"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS 2 -->
+    <div class="section" id="sec-results2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 نتيجة الفصل الدراسي الثاني</div>
+          <label class="toggle" style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:0.82rem;font-weight:700;color:var(--muted)">نشر النتيجة</span>
+            <input type="checkbox" onchange="onToggle(this,'الفصل الثاني')"><span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="card-body">
+          <p style="color:var(--muted);font-size:0.86rem;margin-bottom:18px">نزّل التيمبلت لكل صف ← املأ البيانات ← ارفع الملف</p>
+          <div class="grades-grid" id="gg2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEWS -->
+    <div class="section" id="sec-news">
+      <div class="card">
+        <div class="card-header"><div class="card-title">➕ إضافة خبر جديد</div></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group"><label>عنوان الخبر</label><input id="nt" placeholder="مثال: تم نشر نتائج الفصل الأول"></div>
+            <div class="form-group"><label>التاريخ</label><input type="date" id="nd"></div>
+            <div class="form-group form-full"><label>تفاصيل الخبر</label><textarea id="nb" rows="3" placeholder="اكتب تفاصيل الخبر..."></textarea></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:8px" onclick="addNews()">📢 نشر الخبر</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">📰 الأخبار المنشورة</div></div>
+        <div class="card-body" id="news-list"></div>
+      </div>
+    </div>
+
+    <!-- SUBJECTS -->
+    <div class="section" id="sec-subjects">
+      <div class="card">
+        <div class="card-header"><div class="card-title">📚 المواد الدراسية</div></div>
+        <div class="card-body">
+          <p style="color:var(--muted);font-size:0.86rem;margin-bottom:16px">المواد المضافة ستظهر تلقائياً في تيمبلت Excel.</p>
+          <div class="subjects-list" id="sublist"></div>
+          <div class="add-subject-row">
+            <input class="search-input" id="newsub" placeholder="اسم المادة الجديدة..." style="max-width:280px">
+            <button class="btn btn-primary" onclick="addSubject()">➕ إضافة</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CERTIFICATE -->
+    <div class="section" id="sec-certificate">
+      <div class="card">
+        <div class="card-header"><div class="card-title">🎓 تيمبلت الشهادة</div></div>
+        <div class="card-body">
+          <div class="alert alert-warning">💡 ارفع صورة الشهادة الفارغة. البيانات ستُوضع فوقها في المواضع المحددة.</div>
+          <div class="cert-preview" id="cprev" onclick="document.getElementById('cimg').click()">
+            <div id="cph"><div style="font-size:2.8rem;margin-bottom:10px">🎓</div><div style="font-weight:700;color:var(--text)">اضغط لرفع صورة الشهادة</div><div style="font-size:0.8rem;margin-top:4px">PNG أو JPG بدقة عالية</div></div>
+            <img id="cprevimg" style="display:none;max-width:100%">
+            <input type="file" id="cimg" accept="image/*" style="display:none" onchange="prevCert(this)">
+          </div>
+          <div style="margin-top:22px">
+            <h4 style="font-size:0.92rem;font-weight:700;margin-bottom:14px;color:var(--primary)">📍 إحداثيات الحقول</h4>
+            <div class="form-grid">
+              <div class="form-group"><label>اسم الطالب — X</label><input type="number" value="400"></div>
+              <div class="form-group"><label>اسم الطالب — Y</label><input type="number" value="280"></div>
+              <div class="form-group"><label>رقم الجلوس — X</label><input type="number" value="200"></div>
+              <div class="form-group"><label>رقم الجلوس — Y</label><input type="number" value="340"></div>
+              <div class="form-group"><label>الإجمالي — X</label><input type="number" value="600"></div>
+              <div class="form-group"><label>الإجمالي — Y</label><input type="number" value="400"></div>
+            </div>
+            <button class="btn btn-primary" style="margin-top:10px" onclick="showToast('تم حفظ إعدادات الشهادة ✅')">💾 حفظ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="section" id="sec-settings">
+      <div class="card">
+        <div class="card-header"><div class="card-title">🏫 إعدادات المدرسة</div></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group"><label>اسم المدرسة</label><input value="مدرسة النور الإعدادية"></div>
+            <div class="form-group"><label>السنة الدراسية</label><input value="2024 / 2025"></div>
+            <div class="form-group form-full"><label>عنوان المدرسة</label><input value="شارع النيل، المنيا"></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:14px" onclick="showToast('تم الحفظ ✅')">💾 حفظ</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🔐 تغيير كلمة المرور</div></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group"><label>كلمة المرور الحالية</label><input type="password" placeholder="••••••••"></div>
+            <div class="form-group" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:18px">
+              <div class="form-group"><label>الجديدة</label><input type="password" placeholder="••••••••"></div>
+              <div class="form-group"><label>تأكيد الجديدة</label><input type="password" placeholder="••••••••"></div>
+            </div>
+          </div>
+          <button class="btn btn-danger" style="margin-top:14px" onclick="showToast('تم تغيير كلمة المرور ✅')">🔐 تغيير</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const GRADES = ['أولى إعدادي','ثانية إعدادي','ثالثة إعدادي','أولى ثانوي','ثانية ثانوي','ثالثة ثانوي'];
+const COUNTS = [42,45,40,38,44,39];
+const TITLES = {dashboard:'لوحة المعلومات',users:'إدارة المستخدمين',results1:'نتيجة الفصل الأول',results2:'نتيجة الفصل الثاني',news:'الأخبار',subjects:'المواد الدراسية',certificate:'تيمبلت الشهادة',settings:'الإعدادات'};
+
+let subjects = ['عربي','رياضيات','علوم','دراسات','إنجليزي'];
+let newsData = [
+  {title:'تم نشر نتائج الفصل الدراسي الأول',body:'يمكن للطلاب الاستعلام برقم الجلوس.',date:'2025-03-15'},
+  {title:'امتحانات الفصل الثاني في مايو',body:'تبدأ في الأول من مايو لجميع المراحل.',date:'2025-03-10'},
+];
+let users = [
+  {name:'أحمد محمد علي',seat:'1234',grade:'ثانية إعدادي',cls:'1/4',phone:'01012345678',status:'active'},
+  {name:'سارة علي حسن',seat:'5678',grade:'أولى ثانوي',cls:'2/2',phone:'01112223344',status:'active'},
+  {name:'محمد عبدالله',seat:'9012',grade:'ثالثة إعدادي',cls:'1/6',phone:'01555667788',status:'inactive'},
+  {name:'فاطمة أحمد',seat:'3456',grade:'ثانية ثانوي',cls:'2/4',phone:'01234567890',status:'active'},
+  {name:'عمر حسين',seat:'7890',grade:'أولى إعدادي',cls:'1/2',phone:'01099887766',status:'active'},
+  {name:'نور محمود',seat:'2345',grade:'ثالثة ثانوي',cls:'2/1',phone:'01567891234',status:'inactive'},
+];
+
+function go(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  document.getElementById('topbar-title').textContent = TITLES[id]||'';
+}
+
+function renderUsers(data) {
+  document.getElementById('utbody').innerHTML = data.map((u,i)=>`
+    <tr>
+      <td><strong>${u.name}</strong></td>
+      <td><code style="background:var(--bg);padding:3px 8px;border-radius:6px;font-weight:700">${u.seat}</code></td>
+      <td>${u.grade}</td><td>${u.cls}</td>
+      <td dir="ltr" style="font-size:0.85rem">${u.phone}</td>
+      <td><span class="badge ${u.status==='active'?'badge-active':'badge-inactive'}">${u.status==='active'?'✅ نشط':'⛔ غير نشط'}</span></td>
+      <td><button class="btn btn-outline btn-sm" onclick="toggleUser(${i})">${u.status==='active'?'تعطيل':'تفعيل'}</button></td>
+    </tr>`).join('');
+}
+
+function filterUsers(v) { renderUsers(users.filter(u=>u.name.includes(v)||u.seat.includes(v))); }
+function filterGrade(g) { renderUsers(g ? users.filter(u=>u.grade===g) : users); }
+function toggleUser(i) {
+  users[i].status = users[i].status==='active'?'inactive':'active';
+  renderUsers(users);
+  showToast(`تم ${users[i].status==='active'?'تفعيل':'تعطيل'} الطالب ✅`);
+}
+
+function renderGrades(id, uploaded) {
+  document.getElementById(id).innerHTML = GRADES.map((g,i)=>`
+    <div class="grade-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:13px">
+        <div><div class="grade-name">${g}</div><div class="grade-count">👥 ${COUNTS[i]} طالب</div></div>
+        <span class="dot ${uploaded?'dot-on':'dot-off'}" title="${uploaded?'مرفوع':'لم يُرفع'}"></span>
+      </div>
+      <div class="grade-actions">
+        <button class="btn btn-accent btn-sm" onclick="dlTemplate('${g}')">⬇️ تنزيل التيمبلت</button>
+        <button class="btn btn-outline btn-sm" onclick="fakeUpload('${g}')">📤 رفع النتائج</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderSubjects() {
+  document.getElementById('sublist').innerHTML = subjects.map((s,i)=>`
+    <div class="subject-chip">📖 ${s}
+      ${i>=5?`<button onclick="removeSubject(${i})">×</button>`:''}
+    </div>`).join('');
+}
+
+function addSubject() {
+  const v = document.getElementById('newsub').value.trim();
+  if(!v) return;
+  if(subjects.includes(v)){showToast('المادة موجودة بالفعل');return;}
+  subjects.push(v); renderSubjects();
+  document.getElementById('newsub').value='';
+  showToast(`تمت إضافة "${v}" ✅`);
+}
+
+function removeSubject(i) { subjects.splice(i,1); renderSubjects(); showToast('تم الحذف'); }
+
+function renderNews() {
+  const el = document.getElementById('news-list');
+  if(!newsData.length){el.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px">لا توجد أخبار</p>';return;}
+  el.innerHTML = newsData.map((n,i)=>`
+    <div class="news-item">
+      <div class="news-icon">📰</div>
+      <div class="news-item-body"><h4>${n.title}</h4><p>${n.body}</p><p style="font-size:0.73rem;color:var(--muted);margin-top:3px">${n.date}</p></div>
+      <button class="btn btn-danger btn-sm" onclick="delNews(${i})">🗑️</button>
+    </div>`).join('');
+}
+
+function addNews() {
+  const t=document.getElementById('nt').value.trim(), b=document.getElementById('nb').value.trim(), d=document.getElementById('nd').value;
+  if(!t||!b){showToast('أكمل البيانات');return;}
+  newsData.unshift({title:t,body:b,date:d||new Date().toISOString().split('T')[0]});
+  renderNews();
+  document.getElementById('nt').value=''; document.getElementById('nb').value='';
+  showToast('تم نشر الخبر ✅');
+}
+
+function delNews(i){newsData.splice(i,1);renderNews();showToast('تم الحذف');}
+
+function doUpload(type) {
+  document.getElementById('uprog').style.display='block';
+  let p=0;
+  const iv=setInterval(()=>{
+    p+=12; document.getElementById('ubar').style.width=p+'%';
+    if(p>=100){clearInterval(iv);document.getElementById('uprog-txt').textContent='✅ تم الرفع بنجاح!';showToast('تم رفع الملف ✅');}
+  },180);
+}
+
+function fakeUpload(grade){showToast(`تم رفع نتائج "${grade}" ✅`);}
+function dlTemplate(label){showToast(`⬇️ جاري تنزيل تيمبلت ${label}...`);}
+function onToggle(cb,label){showToast(`${cb.checked?'✅ تم نشر':'⛔ تم إخفاء'} ${label}`);}
+
+function prevCert(input){
+  if(!input.files[0])return;
+  const r=new FileReader();
+  r.onload=e=>{
+    document.getElementById('cph').style.display='none';
+    const img=document.getElementById('cprevimg');img.src=e.target.result;img.style.display='block';
+    showToast('تم رفع صورة الشهادة ✅');
+  };r.readAsDataURL(input.files[0]);
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block'; t.style.opacity='1';
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.style.display='none',400);},2500);
+}
+
+// INIT
+renderUsers(users);
+renderGrades('gg1', true);
+renderGrades('gg2', false);
+renderSubjects();
+renderNews();
+</script>
+</body>
+</html>
