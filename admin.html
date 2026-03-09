@@ -396,6 +396,7 @@ select.filter-sel{padding:10px 14px;border:2px solid var(--border);border-radius
 <div id="toast"></div>
 
 <script>
+const API = 'https://school-chi-one.vercel.app';
 const GRADES = ['أولى إعدادي','ثانية إعدادي','ثالثة إعدادي','أولى ثانوي','ثانية ثانوي','ثالثة ثانوي'];
 const COUNTS = [42,45,40,38,44,39];
 const TITLES = {dashboard:'لوحة المعلومات',users:'إدارة المستخدمين',results1:'نتيجة الفصل الأول',results2:'نتيجة الفصل الثاني',news:'الأخبار',subjects:'المواد الدراسية',certificate:'تيمبلت الشهادة',settings:'الإعدادات'};
@@ -506,7 +507,7 @@ function doUpload(type) {
 }
 
 function fakeUpload(grade){showToast(`تم رفع نتائج "${grade}" ✅`);}
-function dlTemplate(label){showToast(`⬇️ جاري تنزيل تيمبلت ${label}...`);}
+function dlTemplate(label){ window.open(`${API}/api/admin/template/users`,'_blank'); showToast(`⬇️ جاري تنزيل تيمبلت ${label}...`); }
 function onToggle(cb,label){showToast(`${cb.checked?'✅ تم نشر':'⛔ تم إخفاء'} ${label}`);}
 
 function prevCert(input){
